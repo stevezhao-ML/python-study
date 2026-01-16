@@ -26,6 +26,10 @@ while True:
         if cc in ['+','-','*','/']:
             break
         print("你输入的不是加减乘除哦，请输入你要的运算“+ - * /”：")
+    if cc == "/" and b == 0:
+            cc = input("除数不能是0，请重新输入,任意键继续。。。")  
+            continue
+    
     print(cc, "法运算结果是：", round(calcu(a, b, cc),2))
     tryagain = input("是否要再算一次？是的话请输入‘y’,按任意键退出：")
     if tryagain.lower() != "y":
