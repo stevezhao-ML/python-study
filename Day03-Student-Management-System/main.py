@@ -1,23 +1,29 @@
 import json
 import csv
 import os
-print("数据文件保存路径：", os.path.abspath("students.json"))
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+json_file = os.path.join(BASE_DIR, "students.json")
+csv_file  = os.path.join(BASE_DIR, "students_in_d3.csv")
+print("数据文件保存路径：", csv_file)
+print("数据文件保存路径：", json_file)
 def export_csv(students, filename="students_in_d3.csv"):
-    with open(filename, "w", newline='') as f:
+    filepath = os.path.join(BASE_DIR, filename)
+    with open(filepath, "w", newline='', encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["name", "age"])
         writer.writeheader()
         writer.writerows(students)
-    print(f"已导出 {filename}")
+    print(f"已导出 {filepath}")
 
 def load_students():
     try:
-        with open("students.json", "r") as f:
+        with open(json_file, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
 
 def save_students(students):
-    with open("students.json", "w") as f:
+    with open(json_file, "w", encoding="utf-8") as f:
         json.dump(students, f, indent=2)
         
 students = load_students()
@@ -71,9 +77,13 @@ def delete_student(students):
         return
     index = int(index) - 1
     if 0 <= index < len(students):
-        removed = students.pop(index)
-        save_students(students)
-        print(f"{removed['name']} 已删除")
+        double_check1 = input(f"确认删除请按'y'，否则按任意键取消！将删除编号为 {index+1} 的同学数据：")
+        if double_check1.lower() == 'y':
+            removed = students.pop(index)
+            save_students(students)
+            print(f"{removed['name']} 已删除")
+        else:
+            print("删除失败，删除操作已取消！")
     else:
         print("编号错误")
               

@@ -16,10 +16,6 @@
     "age": "14"
   },
   {
-    "name": "stranger",
-    "age": "88"
-  },
-  {
     "name": "double lee",
     "age": "73"
   },
@@ -66,5 +62,13 @@
   {
     "name": "juliana piupiu",
     "age": 7
+  },
+  {
+    "name": "christina huang",
+    "age": 123
+  },
+  {
+    "name": "amy Gu",
+    "age": 53
   }
 ]
