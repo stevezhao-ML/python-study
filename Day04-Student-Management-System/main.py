@@ -4,7 +4,7 @@ def main():
     manager = StudentManager()
     while True:
         print("\n=== 学生管理系统 (Day4) ===")
-        print(f"目前共有 {len(manager.students)} 名学生已录入")
+        print(f"目前共有 {manager.count()} 名学生已录入")
         print("1. 添加学生")
         print("2. 查看学生")
         print("3. 查找学生")
@@ -15,7 +15,7 @@ def main():
         choice = input("请选择功能：").strip()
 
         if choice == "1":
-            manager.add_student()      # 或 add_students() 看你方法名
+            manager.add_student()     
         elif choice == "2":
             manager.show_students()
         elif choice == "3":

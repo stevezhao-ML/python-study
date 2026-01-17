@@ -27,6 +27,9 @@ class StudentManager:
         with open(self.json_file, "w", encoding="utf-8") as f:
             json.dump(self.students, f, indent=2, ensure_ascii=False)  # !!!!!!!
     
+    def count(self):
+        return len(self.students)
+    
     def add_student(self):
         while True:
             name = input("请输入学生姓名：").strip()
@@ -66,6 +69,9 @@ class StudentManager:
             print("未找到该学生")
 
     def delete_student(self):
+        if not self.students:
+            print("暂无学生数据，无法删除")
+            return
         self.show_students()
         index = input("请输入要删除的学生编号：")
         if not index.isdigit():
@@ -73,12 +79,12 @@ class StudentManager:
             return
         index = int(index) - 1
         if 0 <= index < len(self.students):
-            double_check1 = input(f"确认删除请按'y'，否则按任意键取消！将删除编号为 {index+1} 的同学数据：")
+            double_check1 = input(f"确认删除请按'y'，否则按任意键取消！将删除编号为 {index+1} 的同学数据：").strip()
             if double_check1.lower() == 'y':
                 removed = self.students.pop(index)
                 self.save_students()
                 print(f"{removed['name']} 已删除")
             else:
-                print("删除失败，删除操作已取消！")
+                print("删除操作已取消！")
         else:
             print("编号错误")
