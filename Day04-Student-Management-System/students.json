@@ -1,74 +1,210 @@
 [
   {
     "name": "steve",
-    "age": "23"
+    "age": 23,
+    "attendance": 0.86,
+    "math": 87,
+    "english": 99,
+    "science": 100
   },
   {
     "name": "claire",
-    "age": "12"
+    "age": 12,
+    "attendance": 0.84,
+    "math": 68,
+    "english": 58,
+    "science": 79
   },
   {
     "name": "annier",
-    "age": "2"
+    "age": 2,
+    "attendance": 0.45,
+    "math": 38,
+    "english": 56,
+    "science": 26
   },
   {
     "name": "elsa",
-    "age": "14"
+    "age": 14,
+    "attendance": 0.67,
+    "math": 69,
+    "english": 68,
+    "science": 34
   },
   {
     "name": "double lee",
-    "age": "73"
+    "age": 73,
+    "attendance": 0.78,
+    "math": 88,
+    "english": 77,
+    "science": 99
   },
   {
     "name": "jana lee",
-    "age": "12"
+    "age": 12,
+    "attendance": 0.75,
+    "math": 66,
+    "english": 77,
+    "science": 88
   },
   {
     "name": "trumps2",
-    "age": "87"
+    "age": 87,
+    "attendance": 0.74,
+    "math": 88,
+    "english": 79,
+    "science": 77
   },
   {
     "name": "nora le",
-    "age": "44"
+    "age": 44,
+    "attendance": 0.89,
+    "math": 79,
+    "english": 86,
+    "science": 99
   },
   {
     "name": "12345",
-    "age": "99"
+    "age": 99,
+    "attendance": 0.99,
+    "math": 85,
+    "english": 75,
+    "science": 88
   },
   {
     "name": "chloe Lam",
-    "age": "54"
+    "age": 54,
+    "attendance": 0.95,
+    "math": 68,
+    "english": 84,
+    "science": 97
   },
   {
     "name": "steven wang",
-    "age": 41
+    "age": 41,
+    "attendance": 0.93,
+    "math": 94,
+    "english": 96,
+    "science": 86
   },
   {
     "name": "natalie chow",
-    "age": 43
+    "age": 43,
+    "attendance": 0.96,
+    "math": 92,
+    "english": 86,
+    "science": 86
   },
   {
     "name": "ella niu",
-    "age": 21
+    "age": 21,
+    "attendance": 0.93,
+    "math": 90,
+    "english": 75,
+    "science": 97
   },
   {
     "name": "isabella qiuqiu",
-    "age": 41
+    "age": 41,
+    "attendance": 0.84,
+    "math": 86,
+    "english": 62,
+    "science": 86
   },
   {
     "name": "jelenna biu",
-    "age": 13
+    "age": 13,
+    "attendance": 0.83,
+    "math": 60,
+    "english": 79,
+    "science": 64
   },
   {
     "name": "juliana piupiu",
-    "age": 7
+    "age": 7,
+    "attendance": 0.74,
+    "math": 59,
+    "english": 94,
+    "science": 75
   },
   {
     "name": "christina huang",
-    "age": 123
+    "age": 33,
+    "attendance": 0.32,
+    "math": 48,
+    "english": 9,
+    "science": 57
   },
   {
     "name": "amy Gu",
-    "age": 53
+    "age": 53,
+    "attendance": 0.74,
+    "math": 74,
+    "english": 75,
+    "science": 84
+  },
+  {
+    "name": "obama",
+    "age": 23,
+    "attendance": 0.7,
+    "math": 87,
+    "english": 64,
+    "science": 73
+  },
+  {
+    "name": "trump",
+    "age": 23,
+    "attendance": 0.65,
+    "math": 45,
+    "english": 36,
+    "science": 83
+  },
+  {
+    "name": "binbin",
+    "age": 23,
+    "attendance": 0.89,
+    "math": 89,
+    "english": 68,
+    "science": 93
+  },
+  {
+    "name": "mr who",
+    "age": 23,
+    "attendance": 0.9,
+    "math": 79,
+    "english": 69,
+    "science": 82
+  },
+  {
+    "name": "st2v",
+    "age": 24,
+    "attendance": 0.99,
+    "math": 97,
+    "english": 79,
+    "science": 83
+  },
+  {
+    "name": "gip pig",
+    "age": 24,
+    "attendance": 0.99,
+    "math": 87,
+    "english": 80,
+    "science": 92
+  },
+  {
+    "name": "giuny piggy",
+    "age": 24,
+    "attendance": 0.99,
+    "math": 86,
+    "english": 89,
+    "science": 87
+  },
+  {
+    "name": "manaswee tan",
+    "age": 11,
+    "attendance": 0.99,
+    "math": 79,
+    "english": 97,
+    "science": 85
   }
 ]
