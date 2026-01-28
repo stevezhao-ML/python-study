@@ -4,7 +4,7 @@ import os
 
 from typing import Optional
 from student_analytics import age_distribution, top_n_oldest, summary, kpi_summary, risk_report, student_profile, risk_report_with_reason
-from student_analytics import data_quality_report, profiles
+from student_analytics import data_quality_report, profiles, risk_rank
 from student_model import train_pass_model, predict_fail_prob
 from student_analytics import student_profile
         
@@ -429,3 +429,96 @@ class StudentManager:
             att_show = f"{att:.2f}" if isinstance(att, (int, float)) else str(att)
 
             print(f"{i:<4} {name:<12} {p_show:<10} {risk:<6} {avg_show:<6} {att_show:<6}")
+            
+    def show_conflicts(self,
+                        high_prob: float = 0.6,
+                        low_prob: float = 0.1,
+                        top_k: int = 20):
+        """
+        冲突检测：
+        - A类：规则低/中，但模型不及格概率很高（>= high_prob） -> 潜在漏判
+        - B类：规则高，但模型不及格概率很低（<= low_prob） -> 规则偏严
+        """
+        if not self.students:
+            print("暂无学生数据")
+            return
+        if self.model is None:
+            print("模型未训练，无法进行冲突检测")
+            return
+
+        rows = profiles(self.students)  # analytics: 规则风险、均分、出勤等
+        if not rows:
+            print("暂无数据")
+            return
+
+        # 算模型概率
+        for r in rows:
+            r["fail_prob"] = predict_fail_prob(self.model, r)
+            r["risk_rank"] = risk_rank(r.get("risk_level", ""))
+
+        conflicts = []
+
+        for r in rows:
+            p = r.get("fail_prob", float("nan"))
+            if not (isinstance(p, float) and p == p):
+                continue
+
+            rr = r.get("risk_rank", -1)
+
+            # A类：规则不高(低/中)，但模型很高
+            if rr <= 1 and p >= high_prob:
+                conflicts.append({
+                    "type": "潜在漏判(规则偏低)",
+                    "name": r.get("name", ""),
+                    "risk_level": r.get("risk_level", ""),
+                    "p_fail": p,
+                    "avg_score": r.get("avg_score", ""),
+                    "attendance": r.get("attendance", ""),
+                })
+
+            # B类：规则高，但模型很低
+            if rr == 2 and p <= low_prob:
+                conflicts.append({
+                    "type": "规则偏严(模型偏低)",
+                    "name": r.get("name", ""),
+                    "risk_level": r.get("risk_level", ""),
+                    "p_fail": p,
+                    "avg_score": r.get("avg_score", ""),
+                    "attendance": r.get("attendance", ""),
+                })
+
+        if not conflicts:
+            print("\n=== 决策冲突检测 ===")
+            print("未发现明显冲突（在当前阈值设置下）。")
+            print(f"阈值：A类 high_prob≥{high_prob:.0%}；B类 low_prob≤{low_prob:.0%}")
+            return
+
+        # 排序：先按冲突类型，再按概率极端程度
+        def sort_key(x):
+            t = x["type"]
+            p = x["p_fail"]
+            if t.startswith("潜在漏判"):
+                return (0, -p)  # 概率越高越靠前
+            else:
+                return (1, p)   # 概率越低越靠前
+
+        conflicts.sort(key=sort_key)
+        conflicts = conflicts[:top_k]
+
+        print("\n=== 决策冲突检测（规则 vs 模型）===")
+        print(f"阈值：A类 high_prob≥{high_prob:.0%}（规则低/中但模型高）")
+        print(f"      B类 low_prob≤{low_prob:.0%}（规则高但模型低）\n")
+        print(f"{'类型':<18} {'姓名':<12} {'规则风险':<6} {'P(fail)':<8} {'均分':<6} {'出勤':<6}")
+
+        for c in conflicts:
+            name = str(c.get("name", ""))
+            risk = str(c.get("risk_level", ""))
+            p = c.get("p_fail", float("nan"))
+            avg = c.get("avg_score", "")
+            att = c.get("attendance", "")
+
+            p_show = f"{p*100:.1f}%" if isinstance(p, float) and p == p else "NA"
+            avg_show = f"{avg:.2f}" if isinstance(avg, (int, float)) else str(avg)
+            att_show = f"{att:.2f}" if isinstance(att, (int, float)) else str(att)
+
+            print(f"{c['type']:<18} {name:<12} {risk:<6} {p_show:<8} {avg_show:<6} {att_show:<6}")
