@@ -17,11 +17,12 @@ def get_profile(idx: int):
         raise HTTPException(status_code=404, detail=result["error"])
 
     # 模型概率
-    if getattr(manager, "model", None) is None:
+    model_service = manager.model_service
+
+    if not model_service.is_ready():
         result["model_fail_prob"] = None
-        result["model_fail_prob_pct"] = None
     else:
-        p_fail = predict_fail_prob(manager.model, result)
+        p_fail = model_service.predict_fail_prob(result)
         if p_fail != p_fail:  # NaN
             result["model_fail_prob"] = None
             result["model_fail_prob_pct"] = None

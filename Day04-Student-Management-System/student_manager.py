@@ -5,12 +5,12 @@ import os
 from typing import Optional
 from student_analytics import age_distribution, top_n_oldest, summary, kpi_summary, risk_report, student_profile, risk_report_with_reason
 from student_analytics import data_quality_report, profiles, risk_rank
-from student_model import train_pass_model, predict_fail_prob
-from student_analytics import student_profile
+from decision_engine import DecisionEngine, DecisionConfig
+
         
 class StudentManager:
     def __init__(self):
-        
+        self.decision_engine = DecisionEngine(DecisionConfig(high_prob=0.6, low_prob=0.1, safety_first=True))
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.json_file = os.path.join(self.base_dir, "students.json")
         self.csv_file  = os.path.join(self.base_dir, "students_in_d3.csv")
@@ -21,7 +21,9 @@ class StudentManager:
                 s.setdefault("english", None)
                 s.setdefault("science", None)
         self.save_students()
-        self.model, self.model_info = train_pass_model(self.students)
+        from model_service import ModelService
+        self.model_service = ModelService()
+        self.model_service.load(self.students)
         
     def import_from_csv(self):
         """
@@ -285,7 +287,7 @@ class StudentManager:
             return
 
         idx = int(s)
-        result = student_profile(self.students, idx)
+        result = student_profile(self.students, idx)    # 数据定位与原始输入
         if "error" in result:
             print(result["error"])
             return
@@ -311,15 +313,26 @@ class StudentManager:
         print(f"建议：{result.get('suggestion','')}")
 
         # === 模型预测（AI 部分）===
-        if self.model is None:
-            print("模型预测不及格概率：模型未训练")
+        ms = getattr(self, "model_service", None)
+        if ms is None or (hasattr(ms, "is_ready") and not ms.is_ready()):
+            print("模型预测不及格概率：模型未就绪")
             return
 
-        p_fail = predict_fail_prob(self.model, result)
-        if p_fail == p_fail:  # NaN 检查
+        p_fail = ms.predict_fail_prob(result)
+        if isinstance(p_fail, float):
             print(f"模型预测不及格概率：{p_fail*100:.1f}%")
         else:
-            print("模型预测不及格概率：无法计算（存在缺失特征）")
+            print("模型预测不及格概率：无法计算（存在缺失特征或预测失败）")
+        
+        model_info = self.model_service.info() if hasattr(self.model_service, "info") else {}
+        decision = self.decision_engine.evaluate(result, p_fail, model_info=model_info)
+
+        print("\n=== 最终决策（Decision Engine）===")
+        print(f"最终风险等级：{decision['final_risk_level']}")
+        print(f"动作建议：{decision['decision_action']}")
+        print("决策理由：")
+        for r in decision["reasons"]:
+            print("-", r)
 
         
     
@@ -395,8 +408,10 @@ class StudentManager:
         if not self.students:
             print("暂无学生数据")
             return
-        if self.model is None:
-            print("模型未训练，无法计算概率")
+
+        ms = getattr(self, "model_service", None)
+        if ms is None or (hasattr(ms, "is_ready") and not ms.is_ready()):
+            print("模型未就绪，无法计算概率")
             return
 
         rows = profiles(self.students)  # analytics 负责算均分/风险等
@@ -404,15 +419,17 @@ class StudentManager:
             print("暂无数据")
             return
 
-        # 批量算不及格概率
+        # 批量算不及格概率（统一走 ModelService）
         for r in rows:
-            p_fail = predict_fail_prob(self.model, r)
-            r["fail_prob"] = p_fail
+            r["fail_prob"] = ms.predict_fail_prob(r)
 
-        # 排序：概率高的在前
-        rows.sort(key=lambda x: (x.get("fail_prob", float("nan")) if x.get("fail_prob")==x.get("fail_prob") else -1), reverse=True)
+        # 排序：概率高的在前；None 放最后
+        def sort_key(x):
+            p = x.get("fail_prob", None)
+            return (-p) if isinstance(p, float) else float("inf")
 
-        # 只取前 n
+        rows.sort(key=sort_key)
+
         top = rows[:n]
 
         print(f"\n=== 模型风险 Top {n}（按不及格概率从高到低）===")
@@ -422,9 +439,9 @@ class StudentManager:
             risk = str(r.get("risk_level", ""))
             avg = r.get("avg_score", "")
             att = r.get("attendance", "")
-            p = r.get("fail_prob", float("nan"))
+            p = r.get("fail_prob", None)
 
-            p_show = f"{p*100:.1f}%" if isinstance(p, float) and p == p else "NA"
+            p_show = f"{p*100:.1f}%" if isinstance(p, float) else "NA"
             avg_show = f"{avg:.2f}" if isinstance(avg, (int, float)) else str(avg)
             att_show = f"{att:.2f}" if isinstance(att, (int, float)) else str(att)
 
@@ -442,8 +459,9 @@ class StudentManager:
         if not self.students:
             print("暂无学生数据")
             return
-        if self.model is None:
-            print("模型未训练，无法进行冲突检测")
+        ms = getattr(self, "model_service", None)
+        if ms is None or (hasattr(ms, "is_ready") and not ms.is_ready()):
+            print("模型未就绪，无法进行冲突检测")
             return
 
         rows = profiles(self.students)  # analytics: 规则风险、均分、出勤等
@@ -453,7 +471,7 @@ class StudentManager:
 
         # 算模型概率
         for r in rows:
-            r["fail_prob"] = predict_fail_prob(self.model, r)
+            r["fail_prob"] = ms.predict_fail_prob(r)
             r["risk_rank"] = risk_rank(r.get("risk_level", ""))
 
         conflicts = []
